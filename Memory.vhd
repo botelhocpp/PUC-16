@@ -5,47 +5,30 @@ USE IEEE.NUMERIC_STD.ALL;
 LIBRARY WORK;
 USE WORK.ProcessorPkg.ALL;
 
-ENTITY memory IS
-    GENERIC (
-        START_ADDR : t_Reg16 := (OTHERS => '0');
-        CONTENTS_FILE : STRING := "none"
-    );
-    PORT (
-        data_in : IN t_Reg16;
-        address : IN t_Reg16;
-        we : IN STD_LOGIC;
-        oe : IN STD_LOGIC;
-        bw : IN STD_LOGIC;
-        i_Clk : IN STD_LOGIC;
-        data_out : OUT t_Reg16
-    );
-END memory;
+ENTITY Memory IS
+GENERIC (
+    g_CONTENTS_FILE : STRING := "none"
+);
+PORT (
+    i_Write_Data : IN t_Reg16;
+    i_Address : IN t_Reg16;
+    i_Write_Enable : IN STD_LOGIC;
+    i_Clk : IN STD_LOGIC;
+    o_Read_Data : OUT t_Reg16
+);
+END ENTITY;
 
-ARCHITECTURE behavioral OF memory IS 
-    SIGNAL contents : t_MemoryArray := f_InitMemory(CONTENTS_FILE);
-    
-    SIGNAL memory_address : t_UReg16;
-    SIGNAL address_integer : INTEGER;
+ARCHITECTURE RTL OF Memory IS 
+    SIGNAL r_Contents : t_MemoryArray := f_InitMemory(g_CONTENTS_FILE);
 BEGIN 
-    memory_address <= t_UReg16(address) - t_UReg16(START_ADDR);
-    address_integer <= TO_INTEGER( memory_address );
-    
-    PROCESS(i_Clk, address_integer, oe, we)
+    p_MEMORY_READ_WRITE_CONTROL:
+    PROCESS(i_Clk)
     BEGIN
-        IF(address_integer >= 0 AND address_integer < c_MEMORY_SIZE) THEN
-            IF(oe = '1') THEN        
-                data_out(7 DOWNTO 0) <= contents(address_integer);            
-                data_out(15 DOWNTO 8) <= contents(address_integer + 1);
-                data_out(23 DOWNTO 16) <= contents(address_integer + 2);
-                data_out(31 DOWNTO 24) <= contents(address_integer + 3);
-            ELSIF(RISING_EDGE(i_Clk) AND we = '1') THEN
-                IF(bw = '0') THEN
-                    contents(address_integer + 1) <= data_in(15 DOWNTO 8);
-                    contents(address_integer + 2) <= data_in(23 DOWNTO 16);
-                    contents(address_integer + 3) <= data_in(31 DOWNTO 24);
-                END IF;
-                contents(address_integer) <= data_in(7 DOWNTO 0);
+        IF(RISING_EDGE(i_Clk)) THEN
+            IF(i_Write_Enable = '1') THEN
+                r_Contents(TO_INTEGER(t_UReg16(i_Address))) <= i_Write_Data;
             END IF;
+            o_Read_Data <= r_Contents(TO_INTEGER(t_UReg16(i_Address)));
         END IF;
-    END PROCESS;
-END behavioral;
+    END PROCESS p_MEMORY_READ_WRITE_CONTROL;
+END ARCHITECTURE;

@@ -8,6 +8,14 @@ USE STD.TEXTIO.ALL;
 PACKAGE ProcessorPkg IS
     CONSTANT c_MEMORY_SIZE : INTEGER := 8192;
     CONSTANT c_WORD_SIZE : INTEGER := 16;
+    
+    CONSTANT c_ZERO_FLAG_INDEX : INTEGER := 0;
+    CONSTANT c_CARRY_FLAG_INDEX : INTEGER := 1;
+    CONSTANT c_NEGATIVE_FLAG_INDEX : INTEGER := 2;
+    CONSTANT c_OVERFLOW_FLAG_INDEX : INTEGER := 3;
+    
+    CONSTANT c_REGISTER_SP_INDEX : INTEGER := 14;
+    CONSTANT c_REGISTER_PC_INDEX : INTEGER := 15;
 
     SUBTYPE t_Reg16 IS STD_LOGIC_VECTOR(c_WORD_SIZE - 1 DOWNTO 0);
     SUBTYPE t_UReg16 IS UNSIGNED(c_WORD_SIZE - 1 DOWNTO 0);
@@ -15,27 +23,30 @@ PACKAGE ProcessorPkg IS
     SUBTYPE t_Byte IS STD_LOGIC_VECTOR(7 DOWNTO 0);
     SUBTYPE t_Nibble IS STD_LOGIC_VECTOR(3 DOWNTO 0);
     
+    CONSTANT c_REGISTER_SP_INIT_VALUE : t_Reg16 := x"1FFF";
+    CONSTANT c_REGISTER_PC_INIT_VALUE : t_Reg16 := x"0010";
+    
     TYPE t_MemoryArray IS ARRAY (0 TO c_MEMORY_SIZE - 1) OF t_Byte;
     
     TYPE t_Operation IS (
-        e_MOV,
-        e_MOVT,
-        e_B,
-        e_JMP,
-        e_LDR,
-        e_STR,
-        e_PUSH,
-        e_POP,
-        e_ADD,
-        e_SUB,
-        e_ADD_I,
-        e_SUB_I,
-        e_SHFT_L,
-        e_SHFT_R,
-        e_AND,
-        e_OR,
-        e_XOR,
-        e_INVALID
+        op_MOV,
+        op_MOVT,
+        op_B,
+        op_JMP,
+        op_LDR,
+        op_STR,
+        op_PUSH,
+        op_POP,
+        op_ADD,
+        op_SUB,
+        op_ADD_I,
+        op_SUB_I,
+        op_SHFT_L,
+        op_SHFT_R,
+        op_AND,
+        op_OR,
+        op_XOR,
+        op_INVALID
     );
     
     PURE FUNCTION f_DecodeInstruction(i_Instruction : t_Reg16) RETURN t_Operation;
