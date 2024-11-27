@@ -16,15 +16,18 @@ PORT (
 END ENTITY;
 
 ARCHITECTURE RTL OF GenericRegister IS
+    SIGNAL r_Q : t_Reg16 := g_INIT_VALUE;
 BEGIN    
+    o_Q <= r_Q;
+
     p_LOAD_REGISTER:
     PROCESS(i_Rst, i_Clk)
     BEGIN
         IF(i_Rst = '1') THEN
-            o_Q <= g_INIT_VALUE;
+            r_Q <= g_INIT_VALUE;
         ELSIF(RISING_EDGE(i_Clk)) THEN
             IF(i_Load = '1') THEN
-                o_Q <= i_D;
+                r_Q <= i_D;
             END IF;
         END IF;
     END PROCESS p_LOAD_REGISTER;

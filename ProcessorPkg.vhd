@@ -48,8 +48,19 @@ PACKAGE ProcessorPkg IS
         op_XOR,
         op_INVALID
     );
+    TYPE t_Condition IS (
+        cond_AL,
+        cond_Z,
+        cond_NZ,
+        cond_CS,
+        cond_CC,
+        cond_LT,
+        cond_GE,
+        cond_INVALID
+    );
     
     PURE FUNCTION f_DecodeInstruction(i_Instruction : t_Reg16) RETURN t_Operation;
+    PURE FUNCTION f_DecodeCondition(i_Condition_Bits : t_Nibble) RETURN t_Condition;
     PURE FUNCTION f_HexToBin(i_Hex : CHARACTER) RETURN t_Nibble;
     IMPURE FUNCTION f_InitMemory(i_File_Name : STRING) RETURN t_MemoryArray;
 
@@ -64,46 +75,62 @@ PACKAGE BODY ProcessorPkg IS
     BEGIN
         CASE a_OPCODE_FIELD IS
             WHEN "0000" =>
-                v_Operation := e_MOV;
+                v_Operation := op_MOV;
             WHEN "0001" =>
-                v_Operation := e_MOVT;
+                v_Operation := op_MOVT;
             WHEN "0010" =>
-                v_Operation := e_B;
+                v_Operation := op_B;
             WHEN "0011" =>
-                v_Operation := e_JMP;
+                v_Operation := op_JMP;
             WHEN "0100" =>
-                v_Operation := e_LDR;
+                v_Operation := op_LDR;
             WHEN "0101" =>
-                v_Operation := e_STR;
+                v_Operation := op_STR;
             WHEN "0110" =>
-                v_Operation := e_PUSH;
+                v_Operation := op_PUSH;
             WHEN "0111" =>
-                v_Operation := e_POP;
+                v_Operation := op_POP;
             WHEN "1000" =>
-                v_Operation := e_ADD;
+                v_Operation := op_ADD;
             WHEN "1001" =>
-                v_Operation := e_ADD_I;
+                v_Operation := op_ADD_I;
             WHEN "1010" =>
-                v_Operation := e_SUB;
+                v_Operation := op_SUB;
             WHEN "1011" =>
-                v_Operation := e_SUB_I;
+                v_Operation := op_SUB_I;
             WHEN "1100" =>
                 IF(a_SHIFT_FIELD = '1') THEN
-                    v_Operation := e_SHFT_R;
+                    v_Operation := op_SHFT_R;
                 ELSE
-                    v_Operation := e_SHFT_L;
+                    v_Operation := op_SHFT_L;
                 END IF;
             WHEN "1101" =>
-                v_Operation := e_AND;
+                v_Operation := op_AND;
             WHEN "1110" =>
-                v_Operation := e_OR;
+                v_Operation := op_OR;
             WHEN "1111" =>
-                v_Operation := e_XOR;
+                v_Operation := op_XOR;
             WHEN OTHERS =>
-                v_Operation := e_INVALID;
+                v_Operation := op_INVALID;
         END CASE;
         RETURN v_Operation;
     END f_DecodeInstruction;   
+    
+    PURE FUNCTION f_DecodeCondition(i_Condition_Bits : t_Nibble) RETURN t_Condition IS
+        VARIABLE v_Condition : t_Condition := cond_INVALID;
+    BEGIN
+        CASE i_Condition_Bits IS
+            WHEN "0000" => v_Condition := cond_AL;
+            WHEN "0001" => v_Condition := cond_Z;
+            WHEN "0010" => v_Condition := cond_NZ;
+            WHEN "0011" => v_Condition := cond_CS;
+            WHEN "0100" => v_Condition := cond_CC;
+            WHEN "0101" => v_Condition := cond_LT;
+            WHEN "0110" => v_Condition := cond_GE;
+            WHEN OTHERS => v_Condition := cond_INVALID;
+        END CASE;
+        RETURN v_Condition;
+    END f_DecodeCondition;
     
     PURE FUNCTION f_HexToBin(i_Hex : CHARACTER) RETURN t_Nibble IS
         VARIABLE v_Bin : t_Nibble := (OTHERS => '0');
