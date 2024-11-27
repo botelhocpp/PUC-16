@@ -52,7 +52,7 @@ BEGIN
     );
     e_REGISTER_FILE: ENTITY WORK.RegisterFile
     PORT MAP(
-        i_Data_In => w_Input_Mux,
+        i_Write_Data => w_Input_Mux,
         i_Read_Reg_1 => i_Read_Reg_1,
         i_Read_Reg_2 => i_Read_Reg_2,
         i_Write_Reg => i_Write_Reg,
@@ -87,7 +87,7 @@ BEGIN
 
     -- Muxes
     o_Address <= w_Register_1_Data WHEN (i_Address_Select = '1') ELSE w_Alu_Result;
-    w_Input_Mux <= o_Data_In WHEN (i_Input_Select = '1') ELSE w_Alu_Result;
+    w_Input_Mux <= i_Data_In WHEN (i_Input_Select = '1') ELSE w_Alu_Result;
     w_Operand_Mux <= i_Immediate WHEN (i_Operand_Select = '1') ELSE w_Register_2_Data;
     
 END ARCHITECTURE;

@@ -32,7 +32,7 @@ BEGIN
                     (t_Reg16(SHIFT_LEFT(t_UReg16(i_Op_1), 1)))      WHEN op_SHFT_L,
                     (t_Reg16(SHIFT_RIGHT(t_UReg16(i_Op_1), 1)))     WHEN op_SHFT_R,
                     (i_Op_2)                                        WHEN op_MOV | op_MOVT | op_JMP,
-                    (OTHERS => '0')                                 WHEN op_INVALID
+                    (OTHERS => '0')                                 WHEN op_INVALID;
 
     o_Result <= w_Result;
 
@@ -41,12 +41,26 @@ BEGIN
     o_Flag_Negative <= '1' WHEN (w_Result(c_WORD_SIZE - 1) = '1') ELSE '0';
     
     p_GENERATE_OVERFLOW_FLAG:
-    PROCESS(i_Op_A, i_Op_B, i_Sel)
+    PROCESS(i_Op_1, i_Op_2, w_Result, i_Sel)
     BEGIN
         IF i_Sel = op_SUB THEN
-            o_Flag_Overflow <= '1' WHEN (i_Op_A(c_WORD_SIZE - 1) /= i_Op_B(c_WORD_SIZE - 1)) AND (w_Result(c_WORD_SIZE - 1) /= i_Op_A(c_WORD_SIZE - 1)) ELSE '0';
+            IF(
+                i_Op_1(c_WORD_SIZE - 1) /= i_Op_2(c_WORD_SIZE - 1) AND 
+                w_Result(c_WORD_SIZE - 1) /= i_Op_1(c_WORD_SIZE - 1)
+            ) THEN
+                o_Flag_Overflow <= '1';
+            ELSE
+                o_Flag_Overflow <= '0';
+            END IF;
         ELSE
-            o_Flag_Overflow <= '1' WHEN (i_Op_A(c_WORD_SIZE - 1) = i_Op_B(c_WORD_SIZE - 1)) AND (w_Result(c_WORD_SIZE - 1) /= i_Op_A(c_WORD_SIZE - 1)) ELSE '0';
+            IF(
+                i_Op_1(c_WORD_SIZE - 1) = i_Op_2(c_WORD_SIZE - 1) AND 
+                w_Result(c_WORD_SIZE - 1) /= i_Op_1(c_WORD_SIZE - 1)
+            ) THEN
+                o_Flag_Overflow <= '1';
+            ELSE
+                o_Flag_Overflow <= '0';
+            END IF;
         END IF;
     END PROCESS p_GENERATE_OVERFLOW_FLAG;
 END ARCHITECTURE;

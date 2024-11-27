@@ -30,7 +30,6 @@ BEGIN
         o_Data_Out      => w_Data_From_Processor
     );
     e_MEMORY: ENTITY WORK.Memory
-    GENERIC MAP (  g_CONTENTS_FILE => "memory.txt" )
     PORT MAP ( 
         i_Write_Data => w_Data_From_Processor,
         i_Address => w_Address,

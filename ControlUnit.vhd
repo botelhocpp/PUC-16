@@ -107,7 +107,7 @@ BEGIN
     END PROCESS p_INSTRUCTION_CYCLE_NEXT_STATE;
 
     p_INSTRUCTION_CYCLE_GENERATE_SIGNALS:
-    PROCESS(r_Current_State, w_Instruction, i_Flags)
+    PROCESS(i_Flags, r_Current_State, w_Instruction, w_Operation)
         VARIABLE v_Condition : t_Condition := cond_INVALID;
     BEGIN
         -- Default values (inclined to ALU operations)
@@ -125,12 +125,12 @@ BEGIN
 
         -- Set immediate
         CASE w_Operation IS
-            WHEN op_MOV | op_MOVT =>    w_Immediate <= t_Reg16(RESIZE(t_UReg16(w_Instruction(7 DOWNTO 0), 16)));
-            WHEN op_B =>                w_Immediate <= t_Reg16(RESIZE(t_SReg16(w_Instruction(7 DOWNTO 0), 16)));
-            WHEN op_JMP =>              w_Immediate <= t_Reg16(RESIZE(t_UReg16(w_Instruction(11 DOWNTO 0), 16)));
-            WHEN op_LDR | op_STR =>     w_Immediate <= t_Reg16(RESIZE(t_SReg16(w_Instruction(3 DOWNTO 0), 16)));
+            WHEN op_MOV | op_MOVT =>    w_Immediate <= t_Reg16(RESIZE(t_UReg16(w_Instruction(7 DOWNTO 0)), 16));
+            WHEN op_B =>                w_Immediate <= t_Reg16(RESIZE(t_SReg16(w_Instruction(7 DOWNTO 0)), 16));
+            WHEN op_JMP =>              w_Immediate <= t_Reg16(RESIZE(t_UReg16(w_Instruction(11 DOWNTO 0)), 16));
+            WHEN op_LDR | op_STR =>     w_Immediate <= t_Reg16(RESIZE(t_SReg16(w_Instruction(3 DOWNTO 0)), 16));
             WHEN op_PUSH | op_POP =>    w_Immediate <= x"0001";
-            WHEN op_ADD_I | op_SUB_I => w_Immediate <= t_Reg16(RESIZE(t_UReg16(w_Instruction(3 DOWNTO 0), 16)));
+            WHEN op_ADD_I | op_SUB_I => w_Immediate <= t_Reg16(RESIZE(t_UReg16(w_Instruction(3 DOWNTO 0)), 16));
             WHEN OTHERS =>              w_Immediate <= (OTHERS => '0');
         END CASE;
 
@@ -138,8 +138,8 @@ BEGIN
         CASE r_Current_State IS
             WHEN s_FETCH_1 =>
                 w_Operation <= op_ADD;
-                w_Write_Reg <= c_REGISTER_PC_INDEX;
-                w_Read_Reg_1 <= c_REGISTER_PC_INDEX;
+                w_Write_Reg <= STD_LOGIC_VECTOR(TO_UNSIGNED(c_REGISTER_PC_INDEX, w_Write_Reg'LENGTH));
+                w_Read_Reg_1 <= STD_LOGIC_VECTOR(TO_UNSIGNED(c_REGISTER_PC_INDEX, w_Read_Reg_1'LENGTH));
                 w_Immediate <= x"0001";
                 w_Register_Write_Enable <= '1';
                 w_Address_Select <= '1';
@@ -148,7 +148,7 @@ BEGIN
             WHEN s_FETCH_2 =>
                 w_Load_Cir <= '1';
             
-            WHEN EXECUTE =>      
+            WHEN s_EXECUTE =>      
                 -- Register Write Enable
                 IF(w_Operation = op_B) THEN
                     v_Condition := f_DecodeCondition(w_Instruction(11 DOWNTO 8));
@@ -183,9 +183,9 @@ BEGIN
 
                 -- Destiny Register Select
                 IF(w_Operation = op_JMP OR w_Operation = op_B) THEN
-                    w_Write_Reg <= c_REGISTER_PC_INDEX; 
-                ELSIF(w_Operation = op_PUSH OR w_Operation = op_POP)
-                    w_Write_Reg <= c_REGISTER_SP_INDEX; 
+                    w_Write_Reg <= STD_LOGIC_VECTOR(TO_UNSIGNED(c_REGISTER_PC_INDEX, w_Write_Reg'LENGTH)); 
+                ELSIF(w_Operation = op_PUSH OR w_Operation = op_POP) THEN
+                    w_Write_Reg <= STD_LOGIC_VECTOR(TO_UNSIGNED(c_REGISTER_SP_INDEX, w_Write_Reg'LENGTH)); 
                 END IF;
                       
                 -- Memory Address Select   

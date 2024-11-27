@@ -26,7 +26,7 @@ PACKAGE ProcessorPkg IS
     CONSTANT c_REGISTER_SP_INIT_VALUE : t_Reg16 := x"1FFF";
     CONSTANT c_REGISTER_PC_INIT_VALUE : t_Reg16 := x"0010";
     
-    TYPE t_MemoryArray IS ARRAY (0 TO c_MEMORY_SIZE - 1) OF t_Byte;
+    TYPE t_MemoryArray IS ARRAY (0 TO c_MEMORY_SIZE - 1) OF t_Reg16;
     
     TYPE t_Operation IS (
         op_MOV,
@@ -62,8 +62,6 @@ PACKAGE ProcessorPkg IS
     PURE FUNCTION f_DecodeInstruction(i_Instruction : t_Reg16) RETURN t_Operation;
     PURE FUNCTION f_DecodeCondition(i_Condition_Bits : t_Nibble) RETURN t_Condition;
     PURE FUNCTION f_HexToBin(i_Hex : CHARACTER) RETURN t_Nibble;
-    IMPURE FUNCTION f_InitMemory(i_File_Name : STRING) RETURN t_MemoryArray;
-
 END ProcessorPkg;
 
 PACKAGE BODY ProcessorPkg IS
@@ -71,7 +69,7 @@ PACKAGE BODY ProcessorPkg IS
         ALIAS a_OPCODE_FIELD IS i_Instruction(15 DOWNTO 12);
         ALIAS a_SHIFT_FIELD IS i_Instruction(3);
 
-        VARIABLE v_Operation : t_Operation := e_INVALID;
+        VARIABLE v_Operation : t_Operation := op_INVALID;
     BEGIN
         CASE a_OPCODE_FIELD IS
             WHEN "0000" =>
@@ -149,7 +147,7 @@ PACKAGE BODY ProcessorPkg IS
             WHEN 'A' | 'a' => v_Bin := "1010";
             WHEN 'B' | 'b' => v_Bin := "1011";
             WHEN 'C' | 'c' => v_Bin := "1100";
-            WHEN 'i_D' | 'd' => v_Bin := "1101";
+            WHEN 'D' | 'd' => v_Bin := "1101";
             WHEN 'E' | 'e' => v_Bin := "1110";   
             WHEN 'F' | 'f' => v_Bin := "1111";
             WHEN OTHERS => v_Bin := "0000";     
@@ -157,33 +155,4 @@ PACKAGE BODY ProcessorPkg IS
         
         RETURN v_Bin;
     END f_HexToBin;
-    
-    IMPURE FUNCTION f_InitMemory(i_File_Name : STRING) RETURN t_MemoryArray IS
-      FILE v_Text_File : TEXT;
-      VARIABLE v_Text_Line : LINE;
-      VARIABLE v_Contents : t_MemoryArray := (OTHERS => (OTHERS => '0'));
-      VARIABLE v_Success : FILE_OPEN_STATUS;
-      VARIABLE v_Hex_String : STRING(1 TO 8);
-      
-      VARIABLE i : INTEGER := 0;
-    BEGIN
-        FILE_OPEN(v_Success, v_Text_File, i_File_Name, READ_MODE);
-        IF (v_Success = OPEN_OK) THEN
-          WHILE NOT ENDFILE(v_Text_File) LOOP
-            READLINE(v_Text_File, v_Text_Line);
-            READ(v_Text_Line, v_Hex_String);
-            
-            FOR j IN 0 TO 3 LOOP
-                 v_Contents(i + 3 - j) := f_HexToBin(v_Hex_String(2*j + 1)) & f_HexToBin(v_Hex_String(2*j + 2));
-            END LOOP;
-            
-            i := i + 4;
-          END LOOP;
-          
-          FOR j IN i TO c_MEMORY_SIZE - 1 LOOP
-            v_Contents(j) := (OTHERS => '0');
-          END LOOP;
-      END IF;
-      RETURN v_Contents;
-    END FUNCTION;
 END ProcessorPkg;

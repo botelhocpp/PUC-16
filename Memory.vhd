@@ -6,9 +6,6 @@ LIBRARY WORK;
 USE WORK.ProcessorPkg.ALL;
 
 ENTITY Memory IS
-GENERIC (
-    g_CONTENTS_FILE : STRING := "none"
-);
 PORT (
     i_Write_Data : IN t_Reg16;
     i_Address : IN t_Reg16;
@@ -19,7 +16,12 @@ PORT (
 END ENTITY;
 
 ARCHITECTURE RTL OF Memory IS 
-    SIGNAL r_Contents : t_MemoryArray := f_InitMemory(g_CONTENTS_FILE);
+    SIGNAL r_Contents : t_MemoryArray := (
+        16 => "0000000000000000", -- simple.asm:1: main: mov r0, 0
+        17 => "1001000000000001", -- simple.asm:2: loop: add r0, r0, 1
+        18 => "0010000011111110", -- simple.asm:3: b @loop
+        OTHERS => (OTHERS => '0')
+    );
 BEGIN 
     p_MEMORY_READ_WRITE_CONTROL:
     PROCESS(i_Clk)
