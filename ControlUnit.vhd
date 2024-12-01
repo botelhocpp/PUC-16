@@ -180,6 +180,11 @@ BEGIN
                         w_Load_Flags <= '1';
                     WHEN OTHERS =>
                 END CASE;
+                
+                -- Source Register Select
+                IF(w_Operation = op_B) THEN
+                    w_Read_Reg_1 <= STD_LOGIC_VECTOR(TO_UNSIGNED(c_REGISTER_PC_INDEX, w_Read_Reg_1'LENGTH));
+                END IF;
 
                 -- Destiny Register Select
                 IF(w_Operation = op_JMP OR w_Operation = op_B) THEN
