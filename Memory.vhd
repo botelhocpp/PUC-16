@@ -17,9 +17,29 @@ END ENTITY;
 
 ARCHITECTURE RTL OF Memory IS 
     SIGNAL r_Contents : t_MemoryArray := (
-        16 => "0000000000000000", -- simple.asm:1: main: mov r0, 0
-        17 => "1001000000000001", -- simple.asm:2: loop: add r0, r0, 1
-        18 => "0010000011111110", -- simple.asm:3: b @loop
+        -- .text
+        16 => X"00F0", -- mov r0, 0xF0
+        17 => X"1001", -- movt r0, 0x01
+        18 => X"4100", -- ldr r1, [r0, 0]
+        19 => X"4201", -- ldr r2, [r0, 1]
+        20 => X"8312", -- add r3, r1, r2
+        21 => X"A432", -- sub r4, r3, r2
+        22 => X"9441", -- add r4, r4, 1
+        23 => X"B441", -- sub r4, r4, 1
+        24 => X"C440", -- shtf r4, r4, 1
+        25 => X"C448", -- shtf r4, r4, -1
+        26 => X"A514", -- sub r5, r1, r4
+        27 => X"22F4", -- bnz -12
+        28 => X"5302", -- str r3, [r0, 2]
+        29 => X"60E1", -- push r1
+        30 => X"60E2", -- push r2
+        31 => X"71E0", -- pop r1
+        32 => X"72E0", -- pop r2
+        33 => X"3010", -- jmp 16
+        
+        -- .data
+        16#01F0# => x"0001",
+        16#01F1# => x"0002",
         OTHERS => (OTHERS => '0')
     );
     

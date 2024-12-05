@@ -184,6 +184,11 @@ BEGIN
                 -- Source Register Select
                 IF(w_Operation = op_B) THEN
                     w_Read_Reg_1 <= STD_LOGIC_VECTOR(TO_UNSIGNED(c_REGISTER_PC_INDEX, w_Read_Reg_1'LENGTH));
+                ELSIF(w_Operation = op_MOVT) THEN
+                    w_Read_Reg_1 <= w_Instruction(11 DOWNTO 8);
+                ELSIF(w_Operation = op_STR) THEN
+                    w_Read_Reg_1 <= w_Instruction(7 DOWNTO 4);
+                    w_Read_Reg_2 <= w_Instruction(11 DOWNTO 8);
                 END IF;
 
                 -- Destiny Register Select
@@ -200,7 +205,7 @@ BEGIN
                       
                 -- ALU Operand Select   
                 CASE w_Operation IS
-                    WHEN op_B | op_JMP | op_LDR | op_STR | op_PUSH | op_POP | op_ADD_I | op_SUB_I =>
+                    WHEN op_MOV | op_MOVT | op_B | op_JMP | op_LDR | op_STR | op_PUSH | op_POP | op_ADD_I | op_SUB_I =>
                         w_Operand_Select <= '1';
                     WHEN OTHERS =>
                 END CASE;

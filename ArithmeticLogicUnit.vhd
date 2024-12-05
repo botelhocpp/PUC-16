@@ -31,7 +31,8 @@ BEGIN
                     (i_Op_1 XOR i_Op_2)                             WHEN op_XOR,
                     (t_Reg16(SHIFT_LEFT(t_UReg16(i_Op_1), 1)))      WHEN op_SHFT_L,
                     (t_Reg16(SHIFT_RIGHT(t_UReg16(i_Op_1), 1)))     WHEN op_SHFT_R,
-                    (i_Op_2)                                        WHEN op_MOV | op_MOVT | op_JMP,
+                    (i_Op_2)                                        WHEN op_MOV | op_JMP,
+                    (i_Op_2(7 DOWNTO 0) & i_Op_1(7 DOWNTO 0))       WHEN op_MOVT,
                     (OTHERS => '0')                                 WHEN op_INVALID;
 
     o_Result <= w_Result;
