@@ -19,35 +19,42 @@ PORT(
 END ENTITY;
 
 ARCHITECTURE RTL OF ArithmeticLogicUnit IS
-    CONSTANT c_ZERO : t_Reg16 := (OTHERS => '0');
-    
-    SIGNAL w_Result : t_Reg16 := (OTHERS => '0');
-BEGIN
-    WITH i_Sel SELECT
-        w_Result <= (t_Reg16(t_SReg16(i_Op_1) + t_SReg16(i_Op_2)))  WHEN op_ADD | op_ADD_I | op_B | op_LDR | op_STR | op_POP,
-                    (t_Reg16(t_SReg16(i_Op_1) - t_SReg16(i_Op_2)))  WHEN op_SUB | op_SUB_I | op_PUSH,
-                    (i_Op_1 AND i_Op_2)                             WHEN op_AND,
-                    (i_Op_1 OR i_Op_2)                              WHEN op_OR,
-                    (i_Op_1 XOR i_Op_2)                             WHEN op_XOR,
-                    (t_Reg16(SHIFT_LEFT(t_UReg16(i_Op_1), 1)))      WHEN op_SHFT_L,
-                    (t_Reg16(SHIFT_RIGHT(t_UReg16(i_Op_1), 1)))     WHEN op_SHFT_R,
-                    (i_Op_2)                                        WHEN op_MOV | op_JMP,
-                    (i_Op_2(7 DOWNTO 0) & i_Op_1(7 DOWNTO 0))       WHEN op_MOVT,
-                    (OTHERS => '0')                                 WHEN op_INVALID;
+    SUBTYPE t_SReg17 IS SIGNED(c_WORD_SIZE DOWNTO 0);
 
-    o_Result <= w_Result;
+    CONSTANT c_ZERO : t_SReg17 := (OTHERS => '0');
+    
+    SIGNAL w_Result : t_SReg17 := (OTHERS => '0');
+    SIGNAL w_Op_1 : t_SReg17 := (OTHERS => '0');
+    SIGNAL w_Op_2 : t_SReg17 := (OTHERS => '0');
+BEGIN
+    w_Op_1 <= t_SReg17('0' & i_Op_1);
+    w_Op_2 <= t_SReg17('0' & i_Op_2);
+
+    WITH i_Sel SELECT
+        w_Result <= (w_Op_1 + w_Op_2)                           WHEN op_ADD | op_ADD_I | op_B | op_LDR | op_STR | op_POP,
+                    (w_Op_1 - w_Op_2)                           WHEN op_SUB | op_SUB_I | op_PUSH,
+                    (t_SReg17(SHIFT_LEFT(UNSIGNED(w_Op_1), 1)))           WHEN op_SHFT_L,
+                    (t_SReg17(SHIFT_RIGHT(UNSIGNED(w_Op_2), 1)))          WHEN op_SHFT_R,
+                    (w_Op_1 AND w_Op_2)                         WHEN op_AND,
+                    (w_Op_1 OR w_Op_2)                          WHEN op_OR,
+                    (w_Op_1 XOR w_Op_2)                         WHEN op_XOR,
+                    (w_Op_2)                                    WHEN op_MOV | op_JMP,
+                    (w_Op_2(8 DOWNTO 0) & w_Op_1(7 DOWNTO 0))   WHEN op_MOVT,
+                    (OTHERS => '0')                             WHEN op_INVALID;
+
+    o_Result <= t_Reg16(w_Result(c_WORD_SIZE - 1 DOWNTO 0));
 
 	o_Flag_Zero <= '1' WHEN (w_Result = c_ZERO) ELSE '0';
-	o_Flag_Carry <= '1' WHEN (i_Op_1 < i_Op_2) ELSE '0';
-    o_Flag_Negative <= '1' WHEN (w_Result(c_WORD_SIZE - 1) = '1') ELSE '0';
+    o_Flag_Negative <= w_Result(c_WORD_SIZE - 1);
+	o_Flag_Carry <= w_Result(c_WORD_SIZE);
     
     p_GENERATE_OVERFLOW_FLAG:
-    PROCESS(i_Op_1, i_Op_2, w_Result, i_Sel)
+    PROCESS(w_Op_1, w_Op_2, w_Result, i_Sel)
     BEGIN
         IF i_Sel = op_SUB THEN
             IF(
-                i_Op_1(c_WORD_SIZE - 1) /= i_Op_2(c_WORD_SIZE - 1) AND 
-                w_Result(c_WORD_SIZE - 1) /= i_Op_1(c_WORD_SIZE - 1)
+                w_Op_1(c_WORD_SIZE - 1) /= w_Op_2(c_WORD_SIZE - 1) AND 
+                w_Result(c_WORD_SIZE - 1) /= w_Op_1(c_WORD_SIZE - 1)
             ) THEN
                 o_Flag_Overflow <= '1';
             ELSE
@@ -55,8 +62,8 @@ BEGIN
             END IF;
         ELSE
             IF(
-                i_Op_1(c_WORD_SIZE - 1) = i_Op_2(c_WORD_SIZE - 1) AND 
-                w_Result(c_WORD_SIZE - 1) /= i_Op_1(c_WORD_SIZE - 1)
+                w_Op_1(c_WORD_SIZE - 1) = w_Op_2(c_WORD_SIZE - 1) AND 
+                w_Result(c_WORD_SIZE - 1) /= w_Op_1(c_WORD_SIZE - 1)
             ) THEN
                 o_Flag_Overflow <= '1';
             ELSE

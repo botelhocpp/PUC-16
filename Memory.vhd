@@ -16,7 +16,7 @@ PORT (
 END ENTITY;
 
 ARCHITECTURE RTL OF Memory IS 
-    SIGNAL r_Contents : t_MemoryArray := (
+    SIGNAL r_Contents : t_MemoryArray := (        
         -- .text
         16 => X"00F0", -- mov r0, 0xF0
         17 => X"1001", -- movt r0, 0x01
