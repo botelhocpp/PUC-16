@@ -146,7 +146,9 @@ BEGIN
                 w_Operand_Select <= '1';
 
             WHEN s_FETCH_2 =>
+                w_Read_Reg_1 <= STD_LOGIC_VECTOR(TO_UNSIGNED(c_REGISTER_PC_INDEX, w_Read_Reg_1'LENGTH));
                 w_Load_Cir <= '1';
+                w_Address_Select <= '1';
             
             WHEN s_EXECUTE =>      
                 -- Register Write Enable

@@ -7,39 +7,28 @@ USE WORK.ProcessorPkg.ALL;
 
 ENTITY Memory IS
 PORT (
-    i_Write_Data : IN t_Reg16;
-    i_Address : IN t_Reg16;
-    i_Write_Enable : IN STD_LOGIC;
-    i_Clk : IN STD_LOGIC;
-    o_Read_Data : OUT t_Reg16
+    i_Write_Data    : IN t_Reg16;
+    i_Address       : IN t_Reg16;
+    i_Write_Enable  : IN STD_LOGIC;
+    i_Clk           : IN STD_LOGIC;
+    o_Read_Data     : OUT t_Reg16
 );
 END ENTITY;
 
 ARCHITECTURE RTL OF Memory IS 
     SIGNAL r_Contents : t_MemoryArray := (        
-        -- .text
-        16 => X"00F0", -- mov r0, 0xF0
-        17 => X"1001", -- movt r0, 0x01
-        18 => X"4100", -- ldr r1, [r0, 0]
-        19 => X"4201", -- ldr r2, [r0, 1]
-        20 => X"8312", -- add r3, r1, r2
-        21 => X"A432", -- sub r4, r3, r2
-        22 => X"9441", -- add r4, r4, 1
-        23 => X"B441", -- sub r4, r4, 1
-        24 => X"C440", -- shtf r4, r4, 1
-        25 => X"C448", -- shtf r4, r4, -1
-        26 => X"A514", -- sub r5, r1, r4
-        27 => X"22F4", -- bnz -12
-        28 => X"5302", -- str r3, [r0, 2]
-        29 => X"60E1", -- push r1
-        30 => X"60E2", -- push r2
-        31 => X"71E0", -- pop r1
-        32 => X"72E0", -- pop r2
-        33 => X"3010", -- jmp 16
-        
-        -- .data
-        16#01F0# => x"0001",
-        16#01F1# => x"0002",
+        16 => "0000000000000000", -- btn_led.asm: 6:           mov r0, @btn_addr
+        17 => "0100000100000000", -- btn_led.asm: 7:           ldr r1, [r0]
+        18 => "0000000000000101", -- btn_led.asm: 9:           mov r0, @led_addr
+        19 => "0000001000001111", -- btn_led.asm:10:           mov r2, 0xf
+        20 => "1010010100010010", -- btn_led.asm:11:           sub r5, r1, r2
+        21 => "0010000100000011", -- btn_led.asm:12:           bz @_led_on
+        22 => "0000001000000000", -- btn_led.asm:15:           mov r2, 0
+        23 => "0101001000000000", -- btn_led.asm:16:           str r2, [r0]
+        24 => "0011000000010000", -- btn_led.asm:17:           jmp @main
+        25 => "0000001000001111", -- btn_led.asm:20:           mov r2, 0xf
+        26 => "0101001000000000", -- btn_led.asm:21:           str r2, [r0]
+        27 => "0011000000010000", -- btn_led.asm:22:           jmp @main
         OTHERS => (OTHERS => '0')
     );
     
