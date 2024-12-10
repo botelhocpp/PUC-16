@@ -178,7 +178,7 @@ BEGIN
                 
                 -- Load Flags
                 CASE w_Operation IS
-                    WHEN op_ADD | op_SUB | op_ADD_I | op_SUB_I | op_SHFT_L | op_SHFT_R | op_AND | op_OR | op_XOR =>
+                    WHEN op_MOV | op_MOVT | op_ADD | op_SUB | op_ADD_I | op_SUB_I | op_SHFT_L | op_SHFT_R | op_AND | op_OR | op_XOR =>
                         w_Load_Flags <= '1';
                     WHEN OTHERS =>
                 END CASE;
@@ -215,6 +215,13 @@ BEGIN
             WHEN s_WRITE_BACK =>
                 w_Input_Select <= '1';
                 w_Register_Write_Enable <= '1';
+                      
+                -- ALU Operand Select   
+                CASE w_Operation IS
+                    WHEN op_MOV | op_MOVT | op_B | op_JMP | op_LDR | op_STR | op_PUSH | op_POP | op_ADD_I | op_SUB_I =>
+                        w_Operand_Select <= '1';
+                    WHEN OTHERS =>
+                END CASE;
         END CASE;
     END PROCESS p_INSTRUCTION_CYCLE_GENERATE_SIGNALS;
 END ARCHITECTURE;
