@@ -4,24 +4,24 @@ USE IEEE.STD_LOGIC_1164.ALL;
 LIBRARY WORK;
 USE WORK.ProcessorPkg.ALL;
 
-ENTITY parity_generator IS
+ENTITY ParityGenerator IS
 PORT (
-    data : IN t_Byte;
-    odd_parity : OUT STD_LOGIC
+    i_Data : IN t_Byte;
+    o_Odd_Parity : OUT STD_LOGIC
 );
 END ENTITY;
 
-ARCHITECTURE rtl OF parity_generator IS
+ARCHITECTURE RTL OF ParityGenerator IS
 BEGIN
-    PROCESS(data)
-        VARIABLE parity : STD_LOGIC;
+    PROCESS(i_Data)
+        VARIABLE v_Parity : STD_LOGIC := '0';
     BEGIN
-        parity := '0';
+        v_Parity := '0';
         FOR i IN 0 TO 7 LOOP
-            IF(data(i) = '1') THEN
-                parity := NOT parity;
+            IF(i_Data(i) = '1') THEN
+                v_Parity := NOT v_Parity;
             END IF;
         END LOOP;
-        odd_parity <= NOT parity;
+        o_Odd_Parity <= NOT v_Parity;
     END PROCESS;
 END ARCHITECTURE;

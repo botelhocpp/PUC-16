@@ -1,26 +1,26 @@
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 
-ENTITY sync IS
+ENTITY ClockSync IS
 PORT(
-    A : IN STD_LOGIC;
-    clk: IN STD_LOGIC;
-    rst: IN STD_LOGIC;
-    B: OUT STD_LOGIC
+    i_Data : IN STD_LOGIC;
+    i_Clk: IN STD_LOGIC;
+    i_Rst: IN STD_LOGIC;
+    o_Data: OUT STD_LOGIC
 );
 END ENTITY;
 
-ARCHITECTURE rtl OF sync IS
-	SIGNAL sync_B: STD_LOGIC_VECTOR(1 DOWNTO 0);	
+ARCHITECTURE RTL OF ClockSync IS
+	SIGNAL r_Sync_Data : STD_LOGIC_VECTOR(1 DOWNTO 0) := (OTHERS => '0');	
 BEGIN
-	B <= sync_B(1);
+	o_Data <= r_Sync_Data(1);
 	
-    PROCESS(clk, rst) IS
+    PROCESS(i_Clk, i_Rst) IS
 	   BEGIN
-	       IF(rst = '1') THEN
-	           sync_B <= "00";
-	       ELSIF RISING_EDGE(clk) THEN
-	           sync_B <= sync_B(0) & A;
+	       IF(i_Rst = '1') THEN
+	           r_Sync_Data <= (OTHERS => '0');
+	       ELSIF (RISING_EDGE(i_Clk)) THEN
+	           r_Sync_Data <= r_Sync_Data(0) & i_Data;
 	       END IF;
 	END PROCESS;
 END ARCHITECTURE;

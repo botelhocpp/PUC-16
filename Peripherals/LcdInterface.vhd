@@ -5,26 +5,25 @@ USE IEEE.NUMERIC_STD.ALL;
 LIBRARY WORK;
 USE WORK.ProcessorPkg.ALL;
 
-ENTITY lcd_interface IS
+ENTITY LcdInterface IS
 PORT (
-    din : IN t_byte;
-    din_type : IN STD_LOGIC;
-    vi : IN STD_LOGIC;
-    i_ready : IN STD_LOGIC;
-    clk : IN STD_LOGIC;
-    rst : IN STD_LOGIC;
-    dout : OUT t_byte;
-    o_ready : OUT STD_LOGIC;
-    rs : OUT STD_LOGIC;
-    vo : OUT STD_LOGIC
+    i_Data : IN t_Byte;
+    i_Data_Type : IN STD_LOGIC;
+    i_Valid : IN STD_LOGIC;
+    i_Ready : IN STD_LOGIC;
+    i_Clk : IN STD_LOGIC;
+    i_Rst : IN STD_LOGIC;
+    o_Data : OUT t_Byte;
+    o_Ready : OUT STD_LOGIC;
+    o_Data_Type : OUT STD_LOGIC;
+    o_Valid : OUT STD_LOGIC
 );
 END ENTITY;
 
-ARCHITECTURE rtl OF lcd_interface IS  
-    -- Configuration sequence
-    TYPE conf_sequence_t IS ARRAY (0 TO 4) OF t_byte;
+ARCHITECTURE RTL OF LcdInterface IS  
+    TYPE t_ConfigurationSequence IS ARRAY (0 TO 4) OF t_Byte;
 
-    CONSTANT CONF_SEQUENCE : conf_sequence_t := (
+    CONSTANT c_CONFIGURATION_SEQUENCE : t_ConfigurationSequence := (
         x"28", -- Function Set
         x"08", -- Display Off
         x"01", -- Clear
@@ -32,67 +31,63 @@ ARCHITECTURE rtl OF lcd_interface IS
         x"0C"  -- Display On
     );
 
-    TYPE lcd_state_data_t IS (
-        INIT, 
-        CONFIG, 
-        USER_DATA
+    TYPE t_LcdState IS (
+        s_INIT, 
+        s_CONFIG, 
+        s_USER_DATA
     );
     
-    SIGNAL ready_posedge : STD_LOGIC := '0';
-    SIGNAL state : lcd_state_data_t := INIT;
-    SIGNAL counter : INTEGER RANGE 0 TO 150000000 := 0;
-    SIGNAL config_it : INTEGER RANGE 0 TO CONF_SEQUENCE'LENGTH := 0;
-    
-    SIGNAL w_Register_Input : t_Reg16 := (OTHERS => '0');
+    SIGNAL w_Ready_Posedge : STD_LOGIC := '0';
+    SIGNAL r_State : t_LcdState := s_INIT;
 BEGIN
-    EDGE_DETECTOR_COMP: ENTITY WORK.edge_detector
+    e_READY_EDGE_DETECTOR: ENTITY WORK.EdgeDetector
     PORT MAP (
-        A => i_ready,
-        clk => clk,
-        rst => rst,
-        posedge => ready_posedge
+        i_Data => i_Ready,
+        i_Clk => i_Clk,
+        i_Rst => i_Rst,
+        o_Edge => w_Ready_Posedge
     );
     
-    o_ready <= i_ready WHEN (state = USER_DATA) ELSE '0';
+    o_Ready <= i_Ready WHEN (r_State = s_USER_DATA) ELSE '0';
 
-    PROCESS(clk, rst)
+    PROCESS(i_Clk, i_Rst)
+        VARIABLE v_Config_It : INTEGER RANGE 0 TO c_CONFIGURATION_SEQUENCE'LENGTH := 0;
     BEGIN
-        IF(rst = '1') THEN
-            state <= INIT;
-            vo <= '0';
-            dout <= (OTHERS => '0');
-            rs <= '0';
-            counter <= 0;
-            config_it <= 0;
-        ELSIF(RISING_EDGE(clk)) THEN
-            CASE state IS
-                WHEN INIT =>
-                    IF(i_ready = '1') THEN
-                        state <= CONFIG;
+        IF(i_Rst = '1') THEN
+            r_State <= s_INIT;
+            o_Valid <= '0';
+            o_Data <= (OTHERS => '0');
+            o_Data_Type <= '0';
+            v_Config_It := 0;
+        ELSIF(RISING_EDGE(i_Clk)) THEN
+            CASE r_State IS
+                WHEN s_INIT =>
+                    IF(i_Ready = '1') THEN
+                        r_State <= s_CONFIG;
                     END IF;
                     
-                WHEN CONFIG =>
-                    IF(config_it = CONF_SEQUENCE'LENGTH) THEN
-                        state <= USER_DATA;
+                WHEN s_CONFIG =>
+                    IF(v_Config_It = c_CONFIGURATION_SEQUENCE'LENGTH) THEN
+                        r_State <= s_USER_DATA;
                     ELSE
-                        IF(i_ready = '1' AND config_it < CONF_SEQUENCE'LENGTH - 1) THEN
-                            vo <= '1';
+                        IF(i_Ready = '1' AND v_Config_It < c_CONFIGURATION_SEQUENCE'LENGTH - 1) THEN
+                            o_Valid <= '1';
                         ELSE
-                            vo <= '0';
+                            o_Valid <= '0';
                         END IF;
                         
-                        IF(ready_posedge = '1') THEN
-                            config_it <= config_it + 1;
+                        IF(w_Ready_Posedge = '1') THEN
+                            v_Config_It := v_Config_It + 1;
                         END IF;
                         
-                        rs <= '0';
-                        dout <= CONF_SEQUENCE(config_it);
+                        o_Data_Type <= '0';
+                        o_Data <= c_CONFIGURATION_SEQUENCE(v_Config_It);
                     END IF;
                     
-                WHEN USER_DATA =>
-                    vo <= vi;
-                    rs <= din_type;
-                    dout <= din;
+                WHEN s_USER_DATA =>
+                    o_Valid <= i_Valid;
+                    o_Data_Type <= i_Data_Type;
+                    o_Data <= i_Data;
 
                 WHEN OTHERS =>
             END CASE;

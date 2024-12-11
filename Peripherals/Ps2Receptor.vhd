@@ -5,82 +5,83 @@ USE IEEE.NUMERIC_STD.ALL;
 LIBRARY WORK;
 USE WORK.ProcessorPkg.ALL;
 
-ENTITY ps2_receptor IS
+ENTITY Ps2Receptor IS
 PORT (
-    ps2_data : IN STD_LOGIC;
-    ps2_clk : IN STD_LOGIC;
-    clk : IN STD_LOGIC;
-    rst : IN STD_LOGIC;
-    code : OUT t_Byte;
-    parity_ok : OUT STD_LOGIC;
-    vo : OUT STD_LOGIC
+    i_Ps2_Data : IN STD_LOGIC;
+    i_Ps2_Clk : IN STD_LOGIC;
+    i_Clk : IN STD_LOGIC;
+    i_Rst : IN STD_LOGIC;
+    o_Ps2_Code : OUT t_Byte;
+    o_Parity : OUT STD_LOGIC;
+    o_Valid : OUT STD_LOGIC
 );
 END ENTITY;
 
-ARCHITECTURE rtl OF ps2_receptor IS
-    TYPE ps2_state IS (IDLE, DATA, PARITY);
+ARCHITECTURE RTL OF Ps2Receptor IS
+    TYPE t_Ps2State IS (s_IDLE, s_DATA, s_PARITY);
     
-    SIGNAL state : ps2_state;
-    SIGNAL counter : UNSIGNED(2 DOWNTO 0);
-    SIGNAL data_done : STD_LOGIC;
-    SIGNAL odd_parity : STD_LOGIC;
-    SIGNAL gen_parity : STD_LOGIC;
-    SIGNAL ps2_code : t_Byte;
+    SIGNAL r_State : t_Ps2State;
+    
+    SIGNAL r_Data_Counter : UNSIGNED(2 DOWNTO 0);
+    SIGNAL r_Data_Done : STD_LOGIC;
+    SIGNAL o_Odd_Parity : STD_LOGIC;
+    SIGNAL w_Odd_Parity : STD_LOGIC;
+    SIGNAL r_Ps2_Code : t_Byte;
 BEGIN
-    VO_EDGE_DETECTOR_COMP: ENTITY WORK.edge_detector
+    e_VALID_EDGE_DETECTOR: ENTITY WORK.EdgeDetector
     PORT MAP (
-        A => data_done,
-        clk => clk,
-        rst => rst,
-        posedge => vo
+        i_Data => r_Data_Done,
+        i_Clk => i_Clk,
+        i_Rst => i_Rst,
+        o_Edge => o_Valid
     );
-    PARITY_EDGE_DETECTOR_COMP: ENTITY WORK.edge_detector
+    e_PARITY_EDGE_DETECTOR: ENTITY WORK.EdgeDetector
     PORT MAP (
-        A => odd_parity,
-        clk => clk,
-        rst => rst,
-        posedge => parity_ok
+        i_Data => w_Odd_Parity,
+        i_Clk => i_Clk,
+        i_Rst => i_Rst,
+        o_Edge => o_Parity
     );
-    PARITY_GENERATOR_COMP: ENTITY WORK.parity_generator
+    e_PARITY_GENERATOR: ENTITY WORK.ParityGenerator
     PORT MAP (
-        data => ps2_code,
-        odd_parity => gen_parity
+        i_Data => r_Ps2_Code,
+        o_Odd_Parity => w_Odd_Parity
     );
     
-    code <= ps2_code;
+    o_Ps2_Code <= r_Ps2_Code;
     
-    -- PS/2 FSM (at 30kHz)
-    PROCESS(ps2_clk, rst)
+    p_PS2_RECEPTOR_FSM:
+    PROCESS(i_Ps2_Clk, i_Rst)
     BEGIN
-        IF(rst = '1') THEN
-            state <= IDLE;
-            ps2_code <= (OTHERS => '0');
-            counter <= "000";
-            data_done <= '0';
-            odd_parity <= '0';
-        ELSIF(FALLING_EDGE(ps2_clk)) THEN
-            CASE state IS
-                WHEN IDLE =>
-                    IF(ps2_data = '0') THEN
-                        state <= DATA;
+        IF(i_Rst = '1') THEN
+            r_State <= s_IDLE;
+            r_Ps2_Code <= (OTHERS => '0');
+            r_Data_Counter <= "000";
+            r_Data_Done <= '0';
+            o_Odd_Parity <= '0';
+        ELSIF(FALLING_EDGE(i_Ps2_Clk)) THEN
+            CASE r_State IS
+                WHEN s_IDLE =>
+                    IF(i_Ps2_Data = '0') THEN
+                        r_State <= s_DATA;
                     END IF;
-                    data_done <= '0';
-                    odd_parity <= '0';
-                WHEN DATA =>
-                    IF(counter = "111") THEN
-                        state <= PARITY;
+                    r_Data_Done <= '0';
+                    o_Odd_Parity <= '0';
+                WHEN s_DATA =>
+                    IF(r_Data_Counter = "111") THEN
+                        r_State <= s_PARITY;
                     END IF;
-                    ps2_code(TO_INTEGER(counter)) <= ps2_data;
-                    counter <= counter + 1;
-                WHEN PARITY =>
-                    IF(ps2_data = gen_parity) THEN
-                        odd_parity <= '1';
+                    r_Ps2_Code(TO_INTEGER(r_Data_Counter)) <= i_Ps2_Data;
+                    r_Data_Counter <= r_Data_Counter + 1;
+                WHEN s_PARITY =>
+                    IF(i_Ps2_Data = w_Odd_Parity) THEN
+                        o_Odd_Parity <= '1';
                     ELSE
-                        odd_parity <= '0';
+                        o_Odd_Parity <= '0';
                     END IF;
-                    state <= IDLE;
-                    data_done <= '1';
+                    r_State <= s_IDLE;
+                    r_Data_Done <= '1';
             END CASE;
         END IF;
-    END PROCESS;
+    END PROCESS p_PS2_RECEPTOR_FSM;
 END ARCHITECTURE;

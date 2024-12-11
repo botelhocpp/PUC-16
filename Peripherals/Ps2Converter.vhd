@@ -5,16 +5,16 @@ USE IEEE.NUMERIC_STD.ALL;
 LIBRARY WORK;
 USE WORK.ProcessorPkg.ALL;
 
-ENTITY ps2_converter IS
+ENTITY Ps2Converter IS
 PORT (
-    code : IN t_Byte;
-    char : OUT t_Byte
+    i_Ps2_Code : IN t_Byte;
+    o_Ps2_Char : OUT t_Byte
 );
 END ENTITY;
 
-ARCHITECTURE rtl OF ps2_converter IS
-    TYPE memory_t IS ARRAY (0 TO 255) OF t_Byte;
-    CONSTANT CODES_ROM : memory_t := (
+ARCHITECTURE RTL OF Ps2Converter IS
+    TYPE t_Memory IS ARRAY (0 TO 255) OF t_Byte;
+    CONSTANT c_CODES_ROM : t_Memory := (
         16#1C# => x"61",  -- a
         16#32# => x"62",  -- b
         16#21# => x"63",  -- c
@@ -44,5 +44,5 @@ ARCHITECTURE rtl OF ps2_converter IS
         OTHERS => (OTHERS => '0')
     );
 BEGIN
-    char <= CODES_ROM(TO_INTEGER(unsigned(code)));
+    o_Ps2_Char <= c_CODES_ROM(TO_INTEGER(UNSIGNED(i_Ps2_Code)));
 END ARCHITECTURE;
