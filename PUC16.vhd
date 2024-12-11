@@ -8,21 +8,16 @@ ENTITY PUC16 IS
 PORT (
     i_Clk       : IN STD_LOGIC;
     i_Rst       : IN STD_LOGIC;
+    i_Ps2_Data  : IN STD_LOGIC;
+    i_Ps2_Clk   : IN STD_LOGIC;
+    o_Ssd_1     : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
+    o_Ssd_2     : OUT STD_LOGIC_VECTOR(3 DOWNTO 0); 
     i_Buttons   : IN STD_LOGIC_VECTOR(3 DOWNTO 0);
     o_Leds      : OUT STD_LOGIC_VECTOR(3 DOWNTO 0);
-
-    -- /ps2 keyboard
-    ps2_data : IN STD_LOGIC;
-    ps2_clk : IN STD_LOGIC;
-    
-    -- /lcd
-    lcd_rs : OUT STD_LOGIC;
-    lcd_data : OUT t_Nibble;
-    lcd_rw : OUT STD_LOGIC;
-    lcd_e : OUT STD_LOGIC;
-    
-    j1 : OUT STD_LOGIC_VECTOR(3 downto 0);
-    j2 : OUT STD_LOGIC_VECTOR(3 downto 0)
+    o_Lcd_Rs    : OUT STD_LOGIC;
+    o_Lcd_Data  : OUT t_Nibble;
+    o_Lcd_Rw    : OUT STD_LOGIC;
+    o_Lcd_E     : OUT STD_LOGIC
 );
 END ENTITY;
 
@@ -39,9 +34,16 @@ ARCHITECTURE Structural OF PUC16 IS
     SIGNAL w_Memory_Write_Enable        : STD_LOGIC := '0';
     SIGNAL w_Input_Output_Write_Enable  : STD_LOGIC := '0';
 BEGIN
+    e_CLOCK_WIZARD : ENTITY WORK.ClockWizard
+    PORT MAP (
+        i_Clk => i_Clk,
+        reset => i_Rst,
+        o_Clk => w_Clk,
+        o_Locked => OPEN
+    );
     e_PROCESSOR: ENTITY WORK.processor
     PORT MAP ( 
-        i_Data_In       => w_Data_To_Processor,
+        i_Data       => w_Data_To_Processor,
         i_Clk           => w_Clk,
         i_Rst           => i_Rst,
         o_Write_Enable  => w_Write_Enable,
@@ -64,16 +66,16 @@ BEGIN
         i_Clk           => w_Clk, 
         i_Rst           => i_Rst,
         o_Read_Data     => w_Data_From_Input_Output,
+        i_Ps2_Data      => i_Ps2_Data,
+        i_Ps2_Clk       => i_Ps2_Clk,
+        o_Ssd_1         => o_Ssd_1,
+        o_Ssd_2         => o_Ssd_2,
         i_Buttons       => i_Buttons,
         o_Leds          => o_Leds, 
-		ps2_data        => ps2_data,
-		ps2_clk         => ps2_clk,
-		lcd_rs          => lcd_rs,
-		lcd_data        => lcd_data,
-		lcd_rw          => lcd_rw,
-		lcd_e           => lcd_e,
-		j1              => j1,
-		j2              => j2
+		o_Lcd_Rs        => o_Lcd_Rs,
+		o_Lcd_Data      => o_Lcd_Data,
+		o_Lcd_Rw        => o_Lcd_Rw,
+		o_Lcd_E         => o_Lcd_E
     );
 
     w_Memory_Write_Enable <= '1' WHEN (
@@ -88,12 +90,4 @@ BEGIN
 
     w_Data_To_Processor <=  w_Data_From_Memory WHEN (w_Address >= x"0010") ELSE 
                             w_Data_From_Input_Output;
-    
-    e_CLOCK_WIZARD : ENTITY WORK.ClockWizard
-    PORT MAP (
-        i_Clk => i_Clk,
-        reset => '0',
-        o_Clk => w_Clk,
-        o_Locked => OPEN
-    );
 END ARCHITECTURE;

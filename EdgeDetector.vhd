@@ -1,27 +1,27 @@
 LIBRARY IEEE;
 USE IEEE.STD_LOGIC_1164.ALL;
 
-ENTITY edge_detector IS
+ENTITY EdgeDetector IS
 PORT (
-    A : IN STD_LOGIC;
-    clk : IN STD_LOGIC;
-    rst : IN STD_LOGIC;
-    posedge : OUT STD_LOGIC
+    i_Data : IN STD_LOGIC;
+    i_Clk : IN STD_LOGIC;
+    i_Rst : IN STD_LOGIC;
+    o_Edge : OUT STD_LOGIC
 );
 END ENTITY;
 
-ARCHITECTURE rtl OF edge_detector IS
+ARCHITECTURE RTL OF EdgeDetector IS
     SIGNAL data : STD_LOGIC := '0';
 BEGIN
-    posedge <= (NOT data) AND A;
+    o_Edge <= (NOT data) AND i_Data;
 
     -- Flip-Flop
-    PROCESS(rst, clk)
+    PROCESS(i_Rst, i_Clk)
     BEGIN
-        IF(rst = '1') THEN
+        IF(i_Rst = '1') THEN
             data <= '0';
-        ELSIF(RISING_EDGE(clk)) THEN
-            data <= A;
+        ELSIF(RISING_EDGE(i_Clk)) THEN
+            data <= i_Data;
         END IF;
     END PROCESS;
 END ARCHITECTURE;

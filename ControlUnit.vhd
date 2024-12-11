@@ -84,6 +84,7 @@ BEGIN
     PROCESS(i_Rst, i_Clk)
     BEGIN
         IF(i_Rst = '1') THEN
+            r_Current_State <= s_FETCH_1;
         ELSIF(RISING_EDGE(i_Clk)) THEN
             CASE r_Current_State IS
                 WHEN s_FETCH_1 =>
@@ -125,12 +126,12 @@ BEGIN
 
         -- Set immediate
         CASE w_Operation IS
-            WHEN op_MOV | op_MOVT =>    w_Immediate <= t_Reg16(RESIZE(t_UReg16(w_Instruction(7 DOWNTO 0)), 16));
-            WHEN op_B =>                w_Immediate <= t_Reg16(RESIZE(t_SReg16(w_Instruction(7 DOWNTO 0)), 16));
-            WHEN op_JMP =>              w_Immediate <= t_Reg16(RESIZE(t_UReg16(w_Instruction(11 DOWNTO 0)), 16));
-            WHEN op_LDR | op_STR =>     w_Immediate <= t_Reg16(RESIZE(t_SReg16(w_Instruction(3 DOWNTO 0)), 16));
+            WHEN op_MOV | op_MOVT =>    w_Immediate <= t_Reg16(RESIZE(UNSIGNED(w_Instruction(7 DOWNTO 0)), c_WORD_SIZE));
+            WHEN op_B =>                w_Immediate <= t_Reg16(RESIZE(SIGNED(w_Instruction(7 DOWNTO 0)), c_WORD_SIZE));
+            WHEN op_JMP =>              w_Immediate <= t_Reg16(RESIZE(UNSIGNED(w_Instruction(11 DOWNTO 0)), c_WORD_SIZE));
+            WHEN op_LDR | op_STR =>     w_Immediate <= t_Reg16(RESIZE(SIGNED(w_Instruction(3 DOWNTO 0)), c_WORD_SIZE));
             WHEN op_PUSH | op_POP =>    w_Immediate <= x"0001";
-            WHEN op_ADD_I | op_SUB_I => w_Immediate <= t_Reg16(RESIZE(t_UReg16(w_Instruction(3 DOWNTO 0)), 16));
+            WHEN op_ADD_I | op_SUB_I => w_Immediate <= t_Reg16(RESIZE(UNSIGNED(w_Instruction(3 DOWNTO 0)), c_WORD_SIZE));
             WHEN OTHERS =>              w_Immediate <= (OTHERS => '0');
         END CASE;
 

@@ -6,7 +6,7 @@ USE WORK.ProcessorPkg.ALL;
 
 ENTITY Processor IS
 PORT ( 
-    i_Data_In       : IN t_Reg16;
+    i_Data       : IN t_Reg16;
     i_Clk           : IN STD_LOGIC;
     i_Rst           : IN STD_LOGIC;
     o_Write_Enable  : OUT STD_LOGIC;
@@ -30,7 +30,7 @@ ARCHITECTURE Structural OF Processor IS
 BEGIN
     e_DATAPATH: ENTITY WORK.Datapath
     PORT MAP(
-        i_Data_In => i_Data_In,
+        i_Data => i_Data,
         i_Immediate => w_Immediate,
         i_Clk => i_Clk,
         i_Rst => i_Rst,
@@ -49,7 +49,7 @@ BEGIN
     );
     e_CONTROL_UNIT: ENTITY WORK.ControlUnit
     PORT MAP(
-        i_Instruction => i_Data_In,
+        i_Instruction => i_Data,
         i_Flags => w_Flags,
         i_Clk => i_Clk,
         i_Rst => i_Rst,

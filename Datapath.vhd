@@ -7,7 +7,7 @@ USE WORK.ProcessorPkg.ALL;
 
 ENTITY Datapath IS
 PORT ( 
-    i_Data_In : IN t_Reg16;
+    i_Data : IN t_Reg16;
     i_Immediate : IN t_Reg16;
     
     i_Clk : IN STD_LOGIC;
@@ -87,7 +87,7 @@ BEGIN
 
     -- Muxes
     o_Address <= w_Register_1_Data WHEN (i_Address_Select = '1') ELSE w_Alu_Result;
-    w_Input_Mux <= i_Data_In WHEN (i_Input_Select = '1') ELSE w_Alu_Result;
+    w_Input_Mux <= i_Data WHEN (i_Input_Select = '1') ELSE w_Alu_Result;
     w_Operand_Mux <= i_Immediate WHEN (i_Operand_Select = '1') ELSE w_Register_2_Data;
     
 END ARCHITECTURE;

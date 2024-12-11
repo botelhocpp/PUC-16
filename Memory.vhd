@@ -17,43 +17,28 @@ END ENTITY;
 
 ARCHITECTURE RTL OF Memory IS 
     SIGNAL r_Contents : t_MemoryArray := (        
-        16 => "0000000000000111", -- lcd_test.asm:13: main:   mov r0, 7
-        17 => "0000000100010000", -- lcd_test.asm:14:         mov r1, low(@msg1)
-        18 => "0001000100010000", -- lcd_test.asm:15:         movt r1, high(@msg1)
-        19 => "0100001000010000", -- lcd_test.asm:17:         ldr r2, [r1, 0]
-        20 => "0000110000000111", -- lcd_test.asm:18: _wait1: mov r12, @ldr
-        21 => "0100110011000000", -- lcd_test.asm:19:         ldr r12, [r12]
-        22 => "0000000000000101", -- lcd_test.asm:20:         mov r0, @led
-        23 => "0000000100000001", -- lcd_test.asm:21:         mov r1, 0x1
-        24 => "0101000100000000", -- lcd_test.asm:22:         str r1, [r0]
-        25 => "1001110011000000", -- lcd_test.asm:23:         mov r12, r12
-        26 => "0010001011111001", -- lcd_test.asm:24:         bnz @_wait1
-        27 => "0000110000000111", -- lcd_test.asm:25:         mov r12, @ldr
-        28 => "0101001011000000", -- lcd_test.asm:26:         str r2, [r12]
-        29 => "0000000000000101", -- lcd_test.asm:28:         mov r0, @led
-        30 => "0000000100000011", -- lcd_test.asm:29:         mov r1, 0x3
-        31 => "0101000100000000", -- lcd_test.asm:30:         str r1, [r0]
-        32 => "0100001000010001", -- lcd_test.asm:32:         ldr r2, [r1, 1]
-        33 => "0000110000000111", -- lcd_test.asm:33: _wait2: mov r12, @ldr
-        34 => "0100110011000000", -- lcd_test.asm:34:         ldr r12, [r12]
-        35 => "0000000000000101", -- lcd_test.asm:35:         mov r0, @led
-        36 => "0000000100000010", -- lcd_test.asm:36:         mov r1, 0x2
-        37 => "0101000100000000", -- lcd_test.asm:37:         str r1, [r0]
-        38 => "1001110011000000", -- lcd_test.asm:38:         mov r12, r12
-        39 => "0010001011111001", -- lcd_test.asm:39:         bnz @_wait2
-        40 => "0000110000000111", -- lcd_test.asm:40:         mov r12, @ldr
-        41 => "0101001011000000", -- lcd_test.asm:41:         str r2, [r12]
-        42 => "0000000000000101", -- lcd_test.asm:43:         mov r0, @led
-        43 => "0000000100000011", -- lcd_test.asm:44:         mov r1, 0x3
-        44 => "0101000100000000", -- lcd_test.asm:45:         str r1, [r0]
-        45 => "0010000011111111", -- lcd_test.asm:47: halt:   b @halt
-      4112 => "0000000001110111", -- lcd_test.asm:51: msg1:   .dw "w"
-      4113 => "0000000001100101", -- lcd_test.asm:51:         .dw "e"
-      4114 => "0000000001101100", -- lcd_test.asm:51:         .dw "l"
-      4115 => "0000000001100011", -- lcd_test.asm:51:         .dw "c"
-      4116 => "0000000001101111", -- lcd_test.asm:51:         .dw "o"
-      4117 => "0000000001101101", -- lcd_test.asm:51:         .dw "m"
-      4118 => "0000000001100101", -- lcd_test.asm:51:         .dw "e"
+        16 => "0000000000000111", -- lcd_test.asm:13: main:  mov r0, 7
+        17 => "0000000100010000", -- lcd_test.asm:14:        mov r1, low(@msg1)
+        18 => "0001000100010000", -- lcd_test.asm:15:        movt r1, high(@msg1)
+        19 => "1000000000000001", -- lcd_test.asm:17:        add r0, r0, r1
+        20 => "0100001000010000", -- lcd_test.asm:18: wloop: ldr r2, [r1]
+        21 => "0000110000000111", -- lcd_test.asm:20: _wait: mov r12, @ldr
+        22 => "0100110011000000", -- lcd_test.asm:21:        ldr r12, [r12]
+        23 => "1001110011000000", -- lcd_test.asm:22:        mov r12, r12
+        24 => "0010001011111100", -- lcd_test.asm:23:        bnz @_wait
+        25 => "0000110000000111", -- lcd_test.asm:24:        mov r12, @ldr
+        26 => "0101001011000000", -- lcd_test.asm:25:        str r2, [r12]
+        27 => "1001000100010001", -- lcd_test.asm:27:        add r1, r1, 1
+        28 => "1010001000010000", -- lcd_test.asm:28:        sub r2, r1, r0
+        29 => "0010001011110110", -- lcd_test.asm:29:        bnz @wloop
+        30 => "0010000011111111", -- lcd_test.asm:31: halt:  b @halt
+      4112 => "0000000001110111", -- lcd_test.asm:35: msg1:  .dw "w"
+      4113 => "0000000001100101", -- lcd_test.asm:35:        .dw "e"
+      4114 => "0000000001101100", -- lcd_test.asm:35:        .dw "l"
+      4115 => "0000000001100011", -- lcd_test.asm:35:        .dw "c"
+      4116 => "0000000001101111", -- lcd_test.asm:35:        .dw "o"
+      4117 => "0000000001101101", -- lcd_test.asm:35:        .dw "m"
+      4118 => "0000000001100101", -- lcd_test.asm:35:        .dw "e"
         OTHERS => (OTHERS => '0')
     );
     
